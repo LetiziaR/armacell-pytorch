@@ -13,7 +13,7 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
     input_dim = (X_train.shape[-2], X_train.shape[-1])  # Assuming input_dim should be (batch_size, time_steps)
     model = ARMA(q=q, input_dim=input_dim, units=units, use_bias=add_intercept, **kwargs)
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.005)
 
     X_train = torch.tensor(X_train, dtype=torch.float32)
     y_train = torch.tensor(y_train, dtype=torch.float32).squeeze()
@@ -36,7 +36,6 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
             loss = criterion(outputs, y_batch)
             loss.backward()
             
-            # Gradient clipping
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             
             optimizer.step()
@@ -72,7 +71,6 @@ def run_p_q_test(
     if plot_training:
         plot_convergence(weights_history, p, add_intercept, arima_model)
 
-    # Access model weights directly as a list
     weights_list = [
         model.arma_cell.kernel.detach().cpu().numpy(), 
         model.arma_cell.recurrent_kernel.detach().cpu().numpy()
@@ -144,7 +142,7 @@ def test_ARMA_2_2_multi_unit() -> None:
 
     y = simulate_arma_process(arparams, maparams, 0, n_steps=25000, std=2)
 
-    arima_model = ARIMA(endog=y, order=(p, 0, q), trend="n").fit()  # order = (p,d,q)
+    arima_model = ARIMA(endog=y, order=(p, 0, q), trend="n").fit()  
 
     X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length=10)
     Y_train = np.stack([y_train, y_train], axis=-1)
@@ -153,7 +151,6 @@ def test_ARMA_2_2_multi_unit() -> None:
         q, X_train, Y_train, units=2, plot_training=True
     )
 
-    # Extract weights for each unit
     raw_ar_weights = model.arma_cell.kernel.detach().cpu().numpy()
     raw_ma_weights = model.arma_cell.recurrent_kernel.detach().cpu().numpy()
     
@@ -163,32 +160,18 @@ def test_ARMA_2_2_multi_unit() -> None:
     beta1, gamma1, _ = restore_arma_parameters(weights1, p)
     beta2, gamma2, _ = restore_arma_parameters(weights2, p)
 
-    # Print learned and true parameters for debugging
-    print("Learned AR parameters (beta1):", beta1)
-    print("ARIMA model AR parameters:", arima_model.arparams)
-    print("Learned MA parameters (gamma1):", gamma1)
-    print("ARIMA model MA parameters:", arima_model.maparams)
-
-    # Target 1
     assert np.all(np.abs(beta1 - arima_model.arparams) < 0.05), f"AR parameters (beta1) do not match. Difference: {np.abs(beta1 - arima_model.arparams)}"
     assert np.all(np.abs(gamma1 - arima_model.maparams) < 0.05), f"MA parameters (gamma1) do not match. Difference: {np.abs(gamma1 - arima_model.maparams)}"
 
-    # Print learned and true parameters for the second unit
-    print("Learned AR parameters (beta2):", beta2)
-    print("ARIMA model AR parameters:", arima_model.arparams)
-    print("Learned MA parameters (gamma2):", gamma2)
-    print("ARIMA model MA parameters:", arima_model.maparams)
-
-    # Target 2
     assert np.all(np.abs(beta2 - arima_model.arparams) < 0.05), f"AR parameters (beta2) do not match. Difference: {np.abs(beta2 - arima_model.arparams)}"
     assert np.all(np.abs(gamma2 - arima_model.maparams) < 0.05), f"MA parameters (gamma2) do not match. Difference: {np.abs(gamma2 - arima_model.maparams)}"
 
-#def test_VARMA_1_1_2():
+def test_VARMA_1_1_2() -> None:
     set_all_seeds()
     VAR = np.array([[0.1, -0.2], [0.0, 0.1]])
-    VAR = np.expand_dims(VAR, axis=-1)
+    VAR = np.expand_dims(VAR, axis=-1)  
     VMA = np.array([[-0.4, 0.2], [0.0, -0.4]])
-    VMA = np.expand_dims(VMA, axis=-1)
+    VMA = np.expand_dims(VMA, axis=-1)  
     alpha = np.zeros(2)
     y = simulate_varma_process(VAR, VMA, alpha, n_steps=10000)
     p = 1
@@ -196,45 +179,30 @@ def test_ARMA_2_2_multi_unit() -> None:
 
     varma_model = VARMAX(y, order=(1, 1)).fit()
 
-    sequence_length = 10 
-    X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length)
-    
-    
-    # Train the ARMA model with 2 units to match the bivariate nature of the data
-    model, weights_history = get_trained_ARMA_p_q_model(q, X_train, y_train, units=2)
-    
-    # Extract AR and MA coefficients
-    ar_coef = model.arma_cell.kernel.detach().numpy()
-    ma_coef = model.arma_cell.recurrent_kernel.detach().numpy()
-    
-    # Reshape coefficients to match VARMAX format
-    ar_coef_reshaped = ar_coef[0, :, :, :].transpose(1, 2, 0)
-    ma_coef_reshaped = ma_coef[0, :, :, :].transpose(1, 2, 0)
+    X_train, y_train = prepare_arma_input(max(p, q), y)
+    model, _ = get_trained_ARMA_p_q_model(q, X_train, y_train,units=1, plot_training=True)
 
-    print("ARMA AR coefficients:")
-    print(ar_coef_reshaped)
-    print("VARMAX AR coefficients:")
+    weights_list = [
+        model.arma_cell.kernel.detach().cpu().numpy(),
+        model.arma_cell.recurrent_kernel.detach().cpu().numpy()
+    ]
+    
+    gamma = -weights_list[1][0, 0].T
+    beta =  weights_list[0][0, 0].T - gamma
+
+    print("Learned VAR parameters (beta):")
+    print(beta)
+    print("VARMAX model VAR parameters:")
     print(varma_model.coefficient_matrices_var[0])
-    print("ARMA MA coefficients:")
-    print(ma_coef_reshaped)
-    print("VARMAX MA coefficients:")
+    print("Learned VMA parameters (gamma):")
+    print(gamma)
+    print("VARMAX model VMA parameters:")
     print(varma_model.coefficient_matrices_vma[0])
 
-    # Compare coefficients
-    ar_diff = np.abs(ar_coef_reshaped - varma_model.coefficient_matrices_var[0])
-    ma_diff = np.abs(ma_coef_reshaped - varma_model.coefficient_matrices_vma[0])
-    
-    print("AR coefficient differences:")
-    print(ar_diff)
-    print("MA coefficient differences:")
-    print(ma_diff)
+    assert np.all(np.abs(beta - varma_model.coefficient_matrices_var[0]) < 0.05)
+    assert np.all(np.abs(gamma - varma_model.coefficient_matrices_vma[0]) < 0.05)
 
-    # Assert that the differences are within a tolerance
-    tolerance = 0.1  # You may need to adjust this based on your model's performance
-    assert np.all(ar_diff < tolerance), "AR coefficients do not match within tolerance"
-    assert np.all(ma_diff < tolerance), "MA coefficients do not match within tolerance"
 
-    print("VARMA test passed successfully!")
 
 test_ARMA_1_1()
 test_ARMA_2_1() 
@@ -243,4 +211,4 @@ test_ARMA_1_2()
 test_ARMA_1_1_bias()
 test_ARMA_1_2_bias()
 test_ARMA_2_2_multi_unit()
-#test_VARMA_1_1_2()
+test_VARMA_1_1_2()

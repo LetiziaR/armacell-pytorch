@@ -106,7 +106,7 @@ class TimeSeriesDataset(Dataset):
         return torch.tensor(x, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
 
 def prepare_arma_input(
-    p: int, endog: np.ndarray, sequence_length: int 
+    p: int, endog: np.ndarray, sequence_length: int =10
 ) -> Tuple[np.ndarray, np.ndarray]:
     if endog.ndim == 1:
         endog = endog.reshape((-1, 1))
@@ -127,7 +127,7 @@ def prepare_arma_input(
     return X, y
 
 
-def set_all_seeds(seed=42):
+def set_all_seeds(seed=48):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
