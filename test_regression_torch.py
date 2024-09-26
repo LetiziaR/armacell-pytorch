@@ -166,6 +166,7 @@ def test_ARMA_2_2_multi_unit() -> None:
     assert np.all(np.abs(beta2 - arima_model.arparams) < 0.05), f"AR parameters (beta2) do not match. Difference: {np.abs(beta2 - arima_model.arparams)}"
     assert np.all(np.abs(gamma2 - arima_model.maparams) < 0.05), f"MA parameters (gamma2) do not match. Difference: {np.abs(gamma2 - arima_model.maparams)}"
 
+
 def test_VARMA_1_1_2() -> None:
     set_all_seeds()
     VAR = np.array([[0.1, -0.2], [0.0, 0.1]])
@@ -201,7 +202,6 @@ def test_VARMA_1_1_2() -> None:
 
     assert np.all(np.abs(beta - varma_model.coefficient_matrices_var[0]) < 0.05)
     assert np.all(np.abs(gamma - varma_model.coefficient_matrices_vma[0]) < 0.05)
-
 
 
 test_ARMA_1_1()
