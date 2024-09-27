@@ -2,18 +2,16 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim 
-from typing import Tuple, Any
 from helpers_torch import (restore_arma_parameters, SaveWeights, simulate_arma_process, simulate_varma_process, prepare_arma_input, set_all_seeds)
-from plotting_torch import (plot_convergence)
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.varmax import VARMAX
 from arma_torch import ARMA
 
 def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, plot_training=False, **kwargs):
-    input_dim = (X_train.shape[-2], X_train.shape[-1])  # Assuming input_dim should be (batch_size, time_steps)
+    input_dim = (X_train.shape[-2], X_train.shape[-1]) 
     model = ARMA(q=q, input_dim=input_dim, units=units, use_bias=add_intercept, **kwargs)
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.005)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     X_train = torch.tensor(X_train, dtype=torch.float32)
     y_train = torch.tensor(y_train, dtype=torch.float32).squeeze()
@@ -36,14 +34,13 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
             loss = criterion(outputs, y_batch)
             loss.backward()
             
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
             
             optimizer.step()
             epoch_loss += loss.item()
 
         if plot_training:
             weights_saver.on_epoch_end(model, epoch)
-        print(f'Epoch {epoch+1}/{epochs}, Loss: {epoch_loss/len(X_train)}')
 
     return model, weights_saver.weights_history
 
@@ -68,8 +65,8 @@ def run_p_q_test(
     X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length=10)
     model, weights_history = get_trained_ARMA_p_q_model(q, X_train, y_train, units=1, add_intercept=add_intercept, plot_training=plot_training, **kwargs)
 
-    if plot_training:
-        plot_convergence(weights_history, p, add_intercept, arima_model)
+    #if plot_training:
+    #    plot_convergence(weights_history, p, add_intercept, arima_model)
 
     weights_list = [
         model.arma_cell.kernel.detach().cpu().numpy(), 
@@ -80,14 +77,6 @@ def run_p_q_test(
 
     beta, gamma, alpha = restore_arma_parameters(weights_list, p, add_intercept)
 
-    print("Learned AR parameters (beta):", beta)
-    print("ARIMA model AR parameters:", arima_model.arparams)
-    print("Learned MA parameters (gamma):", gamma)
-    print("ARIMA model MA parameters:", arima_model.maparams)
-
-    if add_intercept:
-        print("Learned intercept (alpha):", alpha)
-        print("ARIMA model intercept:", arima_model.params[0])
 
     assert np.all(np.abs(beta - arima_model.arparams) < 0.05)
     assert np.all(np.abs(gamma - arima_model.maparams) < 0.05)
@@ -147,7 +136,7 @@ def test_ARMA_2_2_multi_unit() -> None:
     X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length=10)
     Y_train = np.stack([y_train, y_train], axis=-1)
     
-    model, weights_history = get_trained_ARMA_p_q_model(
+    model, _ = get_trained_ARMA_p_q_model(
         q, X_train, Y_train, units=2, plot_training=True
     )
 
@@ -160,11 +149,11 @@ def test_ARMA_2_2_multi_unit() -> None:
     beta1, gamma1, _ = restore_arma_parameters(weights1, p)
     beta2, gamma2, _ = restore_arma_parameters(weights2, p)
 
-    assert np.all(np.abs(beta1 - arima_model.arparams) < 0.05), f"AR parameters (beta1) do not match. Difference: {np.abs(beta1 - arima_model.arparams)}"
-    assert np.all(np.abs(gamma1 - arima_model.maparams) < 0.05), f"MA parameters (gamma1) do not match. Difference: {np.abs(gamma1 - arima_model.maparams)}"
+    assert np.all(np.abs(beta1 - arima_model.arparams) < 0.05)
+    assert np.all(np.abs(gamma1 - arima_model.maparams) < 0.05)
 
-    assert np.all(np.abs(beta2 - arima_model.arparams) < 0.05), f"AR parameters (beta2) do not match. Difference: {np.abs(beta2 - arima_model.arparams)}"
-    assert np.all(np.abs(gamma2 - arima_model.maparams) < 0.05), f"MA parameters (gamma2) do not match. Difference: {np.abs(gamma2 - arima_model.maparams)}"
+    assert np.all(np.abs(beta2 - arima_model.arparams) < 0.05)
+    assert np.all(np.abs(gamma2 - arima_model.maparams) < 0.05)
 
 def test_VARMA_1_1_2() -> None:
     set_all_seeds()
@@ -179,8 +168,8 @@ def test_VARMA_1_1_2() -> None:
 
     varma_model = VARMAX(y, order=(1, 1)).fit()
 
-    X_train, y_train = prepare_arma_input(max(p, q), y)
-    model, _ = get_trained_ARMA_p_q_model(q, X_train, y_train,units=1, plot_training=True)
+    X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length=10)
+    model, _ = get_trained_ARMA_p_q_model(q, X_train, y_train, units=1, plot_training=True)
 
     weights_list = [
         model.arma_cell.kernel.detach().cpu().numpy(),
@@ -190,25 +179,7 @@ def test_VARMA_1_1_2() -> None:
     gamma = -weights_list[1][0, 0].T
     beta =  weights_list[0][0, 0].T - gamma
 
-    print("Learned VAR parameters (beta):")
-    print(beta)
-    print("VARMAX model VAR parameters:")
-    print(varma_model.coefficient_matrices_var[0])
-    print("Learned VMA parameters (gamma):")
-    print(gamma)
-    print("VARMAX model VMA parameters:")
-    print(varma_model.coefficient_matrices_vma[0])
-
     assert np.all(np.abs(beta - varma_model.coefficient_matrices_var[0]) < 0.05)
     assert np.all(np.abs(gamma - varma_model.coefficient_matrices_vma[0]) < 0.05)
 
 
-
-test_ARMA_1_1()
-test_ARMA_2_1() 
-test_ARMA_2_2()
-test_ARMA_1_2()
-test_ARMA_1_1_bias()
-test_ARMA_1_2_bias()
-test_ARMA_2_2_multi_unit()
-test_VARMA_1_1_2()

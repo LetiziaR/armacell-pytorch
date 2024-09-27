@@ -24,7 +24,7 @@ X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length=10)
 # 3. Train the model
 
 def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, plot_training=False, **kwargs):
-    input_dim = (X_train.shape[-2], X_train.shape[-1])  # Assuming input_dim should be (batch_size, time_steps)
+    input_dim = (X_train.shape[-2], X_train.shape[-1]) 
     model = ARMA(q=q, input_dim=input_dim, units=units, use_bias=add_intercept, **kwargs)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -34,7 +34,7 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
 
     weights_saver = SaveWeights()
 
-    epochs = 40
+    epochs = 80
     batch_size = 100
     for epoch in range(epochs):
         model.train()
@@ -50,15 +50,13 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
             loss = criterion(outputs, y_batch)
             loss.backward()
             
-            # Gradient clipping
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.5)
             
             optimizer.step()
             epoch_loss += loss.item()
 
         if plot_training:
             weights_saver.on_epoch_end(model, epoch)
-        print(f'Epoch {epoch+1}/{epochs}, Loss: {epoch_loss/len(X_train)}')
 
     return model, weights_saver.weights_history
 
