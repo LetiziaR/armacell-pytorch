@@ -1,6 +1,13 @@
+import os 
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+sys.path.append(root_dir)
+
 from typing import List
 from statsmodels.tsa.arima.model import ARIMA
-from .helpers_torch import restore_arma_parameters
+from armacell.helpers_torch import restore_arma_parameters
 from matplotlib import pyplot as plt
 import numpy as np  
 

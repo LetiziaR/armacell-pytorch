@@ -1,3 +1,10 @@
+import os 
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+sys.path.append(root_dir)
+
 import numpy as np
 from armacell.helpers_torch import restore_arma_parameters, prepare_arma_input, simulate_varma_process
 
