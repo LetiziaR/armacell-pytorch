@@ -55,6 +55,7 @@ from helpers_torch import (simulate_arma_process, prepare_arma_input, set_all_se
 from statsmodels.tsa.arima.model import ARIMA
 import numpy as np
 
+
 # 1. Obtain time series data. Simulating an ARMA process here for simplicity
 
 arparams = np.array([0.1, 0.3])
@@ -62,13 +63,16 @@ maparams = np.array([-0.4, -0.2])
 alpha = 0
 set_all_seeds()
 
+
 #  Generate data
+
 y = simulate_arma_process(arparams, maparams, alpha, n_steps=25000, std=2)
 
 # 2. Data pre-processing.
 # In practice, p and q are hyperparameters. Here, we use the true values.
 p, q = len(arparams), len(maparams)
 X_train, y_train = prepare_arma_input(max(p, q), y)
+
 
 # 3. Train and Fitthe model
 def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, plot_training=False, **kwargs):
@@ -114,6 +118,7 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
 model, weights_history = get_trained_ARMA_p_q_model(q, X_train, y_train, units=1, add_intercept=False, plot_training=True)
 
 
+
 # 4. Fit a classical ARMA model for comparison
 arma_model = ARIMA(endog=y, order=(p, 0, q), trend="n").fit()
 
@@ -126,6 +131,7 @@ Looking at the convergence plot, similiarly to the TensorFlow implementation, th
 ![convergence plot](convergence_plot.png)
 
 
+
 ## Test
 Unit and regression tests are handled through `pytest`, which can be installed via `pip install pytest`.
 To run all tests, simply execute
@@ -134,11 +140,13 @@ pytest
 ```
 from the root of the repository.
 
+
 ## Acknowledgments
 We wish to express our gratitude to prof Rügamer and dr Schiele for providing guidance and support. 
 
 
 ## License
 See [`LICENSE.md`](LICENSE.md) for details.
+
 
 
