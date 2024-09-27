@@ -3,9 +3,7 @@
 This repo contains the PyTorch implementation of the ARMA cell, a neural network cell designed to model time series using a modular and simpler approach compared to traditional Recurrent Neural Network (RNN) cells like Long Short-Term Memory (LSTM) cells. It builds on the autoregressive moving average (ARMA) model, a classical statistical tool for time series analysis.     
 The methodology is described in detail in the paper Schiele, P., Berninger, C., & Rügamer, D. (2024). [ARMA Cell: A Modular and Effective Approach for Neural Autoregressive Modeling](https://arxiv.org/abs/2402.08987). preprint arXiv:2208.14919v2. The official implementation of the ARMA cell in TensorFlow can be found at the [armacell](https://github.com/phschiele/armacell_paper) repository. Additionally, data and code to reproduce the experiments in the original paper can be found at the [armacell_paper](https://github.com/phschiele/armacell_paper) repository.
 
-## Repository contents
 
-T
 
 ## Getting started
 
@@ -17,12 +15,21 @@ Below is an example using the functional model API
 x = ARMA(q, input_dim=(n_features, p), units=1, activation="relu", use_bias=True)(x)
  ```
 
+ To use our repository, first clone it and install the required packages. 
+ 
+```bash
+conda create -n arma_pytorch python=3.10
+conda activate arma_pytorch
+pip install -r requirements.txt
+```
 
-## Comparison with TensorFlow implementation
-
-In this implementation  both ArmaCell and ARMA inherit from the PyTorch nn.Module class. This allows for easy integration into existing PyTorch models and facilitates the use of standard training and evaluation procedures. This also means that the ARMA class implementts its own forward method manually applying the ARMA cell to each time step, in contrast to the TensorFlow implementation. where most of the logic is handled by the `tf.keras.layers.RNN` wrapper.
-
-erences in the implementation due to the distinct design philosophies of these frameworks.
+## Test
+Unit and regression tests are handled through `pytest`, which can be installed via `pip install pytest`.
+To run all tests, simply execute
+```shell
+pytest
+```
+from the root of the repository.
 
 ## Comparison between TensorFlow and PyTorch Implementations
 
@@ -55,7 +62,6 @@ from helpers_torch import (simulate_arma_process, prepare_arma_input, set_all_se
 from statsmodels.tsa.arima.model import ARIMA
 import numpy as np
 
-
 # 1. Obtain time series data. Simulating an ARMA process here for simplicity
 
 arparams = np.array([0.1, 0.3])
@@ -63,16 +69,13 @@ maparams = np.array([-0.4, -0.2])
 alpha = 0
 set_all_seeds()
 
-
 #  Generate data
-
 y = simulate_arma_process(arparams, maparams, alpha, n_steps=25000, std=2)
 
 # 2. Data pre-processing.
 # In practice, p and q are hyperparameters. Here, we use the true values.
 p, q = len(arparams), len(maparams)
 X_train, y_train = prepare_arma_input(max(p, q), y)
-
 
 # 3. Train and Fitthe model
 def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, plot_training=False, **kwargs):
@@ -118,7 +121,6 @@ def get_trained_ARMA_p_q_model(q, X_train, y_train, units, add_intercept=False, 
 model, weights_history = get_trained_ARMA_p_q_model(q, X_train, y_train, units=1, add_intercept=False, plot_training=True)
 
 
-
 # 4. Fit a classical ARMA model for comparison
 arma_model = ARIMA(endog=y, order=(p, 0, q), trend="n").fit()
 
@@ -132,14 +134,6 @@ Looking at the convergence plot, similiarly to the TensorFlow implementation, th
 
 
 
-## Test
-Unit and regression tests are handled through `pytest`, which can be installed via `pip install pytest`.
-To run all tests, simply execute
-```shell
-pytest
-```
-from the root of the repository.
-
 
 ## Acknowledgments
 We wish to express our gratitude to prof Rügamer and dr Schiele for providing guidance and support. 
@@ -147,6 +141,5 @@ We wish to express our gratitude to prof Rügamer and dr Schiele for providing g
 
 ## License
 See [`LICENSE.md`](LICENSE.md) for details.
-
 
 
