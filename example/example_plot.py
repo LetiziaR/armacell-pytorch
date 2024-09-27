@@ -1,3 +1,10 @@
+import os 
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+sys.path.append(root_dir)
+
 import torch
 from torch import nn, optim
 from armacell.arma_torch import ARMA
