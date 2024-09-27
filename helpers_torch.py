@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import random
 import numpy as np
 import torch.optim as optim
 import matplotlib.pyplot as plt
@@ -68,9 +69,6 @@ def simulate_varma_process(
     std: float = 1.0,
     burn_in: int = 50,
 ) -> np.ndarray:
-    # AR Shape: k x k x p
-    # MA Shape: k x k x q
-    # Output: n_steps x k
     assert ar.ndim == ma.ndim == 3
     assert ar.shape[0] == ar.shape[1] == ma.shape[0] == ma.shape[1]
     assert isinstance(alpha, np.ndarray)
@@ -106,7 +104,7 @@ class TimeSeriesDataset(Dataset):
         return torch.tensor(x, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
 
 def prepare_arma_input(
-    p: int, endog: np.ndarray, sequence_length: int =10
+    p: int, endog: np.ndarray, sequence_length: int 
 ) -> Tuple[np.ndarray, np.ndarray]:
     if endog.ndim == 1:
         endog = endog.reshape((-1, 1))
@@ -127,7 +125,7 @@ def prepare_arma_input(
     return X, y
 
 
-def set_all_seeds(seed=48):
-    np.random.seed(seed)
+def set_all_seeds(seed: int = 0) -> None:
     torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
+    np.random.seed(seed)
