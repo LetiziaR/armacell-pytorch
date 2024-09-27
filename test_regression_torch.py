@@ -182,4 +182,3 @@ def test_VARMA_1_1_2() -> None:
     assert np.all(np.abs(beta - varma_model.coefficient_matrices_var[0]) < 0.05)
     assert np.all(np.abs(gamma - varma_model.coefficient_matrices_vma[0]) < 0.05)
 
-
