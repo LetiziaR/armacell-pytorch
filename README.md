@@ -31,25 +31,16 @@ pytest
 ```
 from the root of the repository.
 
+
 ## Comparison between TensorFlow and PyTorch Implementations
 
+The main differences between TensorFlow and PyTorch implementations are in how they structure classes, set up parameters, and handle activations and tensor operations. For class structure, TensorFlow uses special RNN classes like `AbstractRNNCell` and `RNN`. PyTorch, however, uses the basic `nn.Module` class for both `ArmaCell` and `ARMA`.  this allows for easy integration into existing PyTorch models and facilitates the use of standard training and evaluation procedures. 
 
-The most fundamental difference lies in the class inheritance structure. In the TensorFlow implementation, `ArmaCell` extends `AbstractRNNCell`, and `ARMA` extends `RNN`, leveraging TensorFlow's built-in recurrent neural network infrastructure. Conversely, the PyTorch version  both `ArmaCell` and `ARMA` inherit from the PyTorch nn.Module class, this allows for easy integration into existing PyTorch models and facilitates the use of standard training and evaluation procedures. This also means that the ARMA class implementts its own forward method manually applying the ARMA cell to each time step, in contrast to the TensorFlow implementation. where most of the logic is handled by the `tf.keras.layers.RNN` wrapper.
+When it comes to setting up parameters, TensorFlow uses `self.add_weight()` in the `build()` method. PyTorch does this differently, using `nn.Parameter()` in the `__init__()` method.
 
-Parameter initialization also differs between the two implementations. TensorFlow utilizes `self.add_weight()` within the `build()` method, while PyTorch employs `nn.Parameter()` in the `__init__()` method. 
+For activation functions and tensor operations, TensorFlow uses `tf.keras.activations.deserialize()` for activations, and operations like `tf.concat` and `tf.expand_dims` for tensors. PyTorch gets its activation functions from `torch.nn.functional` and uses operations such as `torch.cat` and `unsqueeze` for tensors. which clearly shows the frameworks' different APIs.
 
-State management is handled differently as well. In the TensorFlow version, the `RNN` parent class takes care of state management automatically. The PyTorch implementation, however, requires manual state management within the `ARMA` class's `forward()` method, offering more explicit control but also demanding more detailed coding.
-
-Activation functions and tensor operations also showcase the frameworks' distinct APIs. TensorFlow uses `tf.keras.activations.deserialize()` for activation functions and operations like `tf.concat` and `tf.expand_dims` for tensor manipulation. PyTorch, on the other hand, retrieves activation functions using `getattr(F, activation)` from `torch.nn.functional` and employs operations such as `torch.cat` and `unsqueeze` for tensor operations.
-
-### Implications
-
-These differences reflect the distinct approaches of TensorFlow and PyTorch
-
-- TensorFlow provides more built-in infrastructure for RNNs, potentially simplifying implementation but with less flexibility.
-- PyTorch offers a more explicit, "from-scratch" approach, providing greater control over the implementation details.
-
-Both approaches have their merits, and the choice between them often depends on specific project requirements and personal preference.
+These differences show how TensorFlow and PyTorch approach things differently. TensorFlow has more built-in tools for RNNs, which can make some tasks easier. PyTorch gives you more control over the details, which can be more flexible. Both ways have their good points, and the choice between them often depends on what you need for your project and what you prefer to work with.
 
 
 ## Minimum working example
