@@ -121,7 +121,7 @@ plot_convergence(weights_history, p, add_intercept=False, arima_model=arma_model
 
 Looking at the convergence plot, similiarly to the TensorFlow implementation, the ARMA cell converged to the true parameters at least as good as a classical ARIMA model. Depending on the seed used more or less epochs might be needed.
 
-![convergence plot](convergence_plot.png)
+![convergence plot](example/image.png)
 
 
 
