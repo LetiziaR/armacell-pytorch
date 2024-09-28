@@ -72,8 +72,6 @@ def run_p_q_test(
     X_train, y_train = prepare_arma_input(max(p, q), y, sequence_length=10)
     model, weights_history = get_trained_ARMA_p_q_model(q, X_train, y_train, units=1, add_intercept=add_intercept, plot_training=plot_training, **kwargs)
 
-    #if plot_training:
-    #    plot_convergence(weights_history, p, add_intercept, arima_model)
 
     weights_list = [
         model.arma_cell.kernel.detach().cpu().numpy(), 
