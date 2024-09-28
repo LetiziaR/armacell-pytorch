@@ -1,7 +1,7 @@
-# ARMA cell: PyTorch implementation
+# ARMAcell in PyTorch 
 
 This repo contains the PyTorch implementation of the ARMA cell, a neural network cell designed to model time series using a modular and simpler approach compared to traditional Recurrent Neural Network (RNN) cells like Long Short-Term Memory (LSTM) cells. It builds on the autoregressive moving average (ARMA) model, a classical statistical tool for time series analysis.     
-The methodology is described in detail in the paper Schiele, P., Berninger, C., & Rügamer, D. (2024). [ARMA Cell: A Modular and Effective Approach for Neural Autoregressive Modeling](https://arxiv.org/abs/2402.08987). preprint arXiv:2208.14919v2. The official implementation of the ARMA cell in TensorFlow can be found at the [armacell](https://github.com/phschiele/armacell_paper) repository. Additionally, data and code to reproduce the experiments in the original paper can be found at the [armacell_paper](https://github.com/phschiele/armacell_paper) repository.
+The methodology is described in detail in the paper Schiele, P., Berninger, C., & Rügamer, D. (2024). [ARMA Cell: A Modular and Effective Approach for Neural Autoregressive Modeling](https://arxiv.org/abs/2208.14919). The official implementation of the ARMA cell in TensorFlow can be found at the [armacell](https://github.com/phschiele/armacell_paper) repository. Additionally, data and code to reproduce the experiments in the original paper can be found at the [armacell_paper](https://github.com/phschiele/armacell_paper) repository.
 
 
 
@@ -9,11 +9,11 @@ The methodology is described in detail in the paper Schiele, P., Berninger, C., 
 
 The ARMA cell can be used similarly to other PyTorch modules.The syntax of the PyTorch implementation of the ARMA cell is similiar to the Tensorflow  one. Where `q` is the number of MA lags, wheras the number of AR lags is already represented in the preprocessed data, which is handled by `prepare_arma_input`.
 
-Below is an example using the functional model API
+Below is an example using the PyTorch function.
 
 ```python
 x = ARMA(q, input_dim=(n_features, p), units=1, activation="relu", use_bias=True)(x)
- ```
+ ```rqa
 
  To use our repository, first clone it and install the required packages. 
  
@@ -29,16 +29,16 @@ To run all tests, simply execute
 ```shell
 pytest
 ```
-from the root of the repository.
+from the root of the repository. To check all the test file please refer to the test folder.
 
 
 ## Comparison between TensorFlow and PyTorch Implementations
 
-The main differences between TensorFlow and PyTorch implementations are in how they structure classes, set up parameters, and handle activations and tensor operations. For class structure, TensorFlow uses special RNN classes like `AbstractRNNCell` and `RNN`. PyTorch, however, uses the basic `nn.Module` class for both `ArmaCell` and `ARMA`.  this allows for easy integration into existing PyTorch models and facilitates the use of standard training and evaluation procedures. 
+The main differences between the orignal repository's TensorFlow implementation and the PyTorch implementation are in how they structure classes, set up parameters, and handle activations and tensor operations. For class structure, TensorFlow uses special RNN classes like `AbstractRNNCell` and `RNN`. PyTorch, however, uses the basic `nn.Module` class for both `ArmaCell` and `ARMA`.  this allows for easy integration into existing PyTorch models and facilitates the use of standard training and evaluation procedures. 
 
 When it comes to setting up parameters, TensorFlow uses `self.add_weight()` in the `build()` method. PyTorch does this differently, using `nn.Parameter()` in the `__init__()` method.
 
-For activation functions and tensor operations, TensorFlow uses `tf.keras.activations.deserialize()` for activations, and operations like `tf.concat` and `tf.expand_dims` for tensors. PyTorch gets its activation functions from `torch.nn.functional` and uses operations such as `torch.cat` and `unsqueeze` for tensors. which clearly shows the frameworks' different APIs.
+For activation functions and tensor operations,the TensorFlow implementation uses `tf.keras.activations.deserialize()` for activations, and operations like `tf.concat` and `tf.expand_dims` for tensors. PyTorch gets its activation functions from `torch.nn.functional` and uses operations such as `torch.cat` and `unsqueeze` for tensors. which clearly shows the frameworks' different APIs.
 
 These differences show how TensorFlow and PyTorch approach things differently. TensorFlow has more built-in tools for RNNs, which can make some tasks easier. PyTorch gives you more control over the details, which can be more flexible. Both ways have their good points, and the choice between them often depends on what you need for your project and what you prefer to work with.
 
@@ -119,7 +119,7 @@ arma_model = ARIMA(endog=y, order=(p, 0, q), trend="n").fit()
 plot_convergence(weights_history, p, add_intercept=False, arima_model=arma_model, path="image.png")
 ```
 
-Looking at the convergence plot, similiarly to the TensorFlow implementation, the ARMA cell converged to the true parameters at least as good as a classical ARIMA model. Depending on the seed used more or less epochs might be needed.
+Looking at the convergence plot, similiarly to the TensorFlow implementation, the ARMA cell converged to the true parameters at least as good as a classical ARIMA model.
 
 ![convergence plot](example/image.png)
 
@@ -127,7 +127,7 @@ Looking at the convergence plot, similiarly to the TensorFlow implementation, th
 
 
 ## Acknowledgments
-We wish to express our gratitude to prof Rügamer and dr Schiele for providing guidance and support. 
+We wish to express our gratitude to Dr. Schiele and Prof. Rügamer for providing guidance and support. The code base is based on the orignal implementation of the ARMA cell in TensorFlow, which can be found at the [armacell](https://github.com/phschiele/armacell_paper) repository. We also thank the authors for their open-sourced code.
 
 
 ## License
