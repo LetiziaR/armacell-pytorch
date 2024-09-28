@@ -183,13 +183,3 @@ def test_nonlinear_activation() -> None:
     expected_output = np.tanh(np.apply_over_axes(np.sum, kernel, [0, 1, 2]).flatten())
     assert np.all(ar_output[0, :, 0] == expected_output)
 
-
-test_AR()
-test_AR_multiple_units()
-test_different_batches()
-test_MA()
-test_MA_multiple_units()
-test_states()
-test_return_state()
-test_nonlinear_activation()
-print("All tests passed!")
