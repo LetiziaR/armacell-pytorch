@@ -13,7 +13,7 @@ Below is an example using the PyTorch function.
 
 ```python
 x = ARMA(q, input_dim=(n_features, p), units=1, activation="relu", use_bias=True)(x)
- ```rqa
+```
 
  To use our repository, first clone it and install the required packages. 
  
@@ -29,7 +29,7 @@ To run all tests, simply execute
 ```shell
 pytest
 ```
-from the root of the repository. To check all the test file please refer to the test folder.
+from the root of the repository. To check all the test files please refer to the test folder.
 
 
 ## Comparison between TensorFlow and PyTorch Implementations
