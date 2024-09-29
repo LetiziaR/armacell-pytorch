@@ -1,7 +1,7 @@
 # ARMAcell in PyTorch 
 
 This repo contains the PyTorch implementation of the ARMA cell, a neural network cell designed to model time series using a modular and simpler approach compared to traditional Recurrent Neural Network (RNN) cells like Long Short-Term Memory (LSTM) cells. It builds on the autoregressive moving average (ARMA) model, a classical statistical tool for time series analysis.     
-The methodology is described in detail in the paper Schiele, P., Berninger, C., & Rügamer, D. (2024). [ARMA Cell: A Modular and Effective Approach for Neural Autoregressive Modeling](https://arxiv.org/abs/2208.14919). The official implementation of the ARMA cell in TensorFlow can be found at the [armacell](https://github.com/phschiele/armacell_paper) repository. Additionally, data and code to reproduce the experiments in the original paper can be found at the [armacell_paper](https://github.com/phschiele/armacell_paper) repository.
+The methodology is described in detail in the paper Schiele, P., Berninger, C., & Rügamer, D. (2024). [ARMA Cell: A Modular and Effective Approach for Neural Autoregressive Modeling](https://arxiv.org/abs/2208.14919). The official implementation of the ARMA cell in TensorFlow can be found at the [armacell](https://github.com/phschiele/armacell) repository. Additionally, data and code to reproduce the experiments in the original paper can be found at the [armacell_paper](https://github.com/phschiele/armacell_paper) repository.
 
 
 
